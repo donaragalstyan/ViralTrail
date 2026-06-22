@@ -16,12 +16,6 @@ export function Header() {
           </span>
         </Link>
         <nav className="flex items-center gap-4">
-          <Link
-            href="/generate"
-            className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
-          >
-            Plan a Trip
-          </Link>
           <Button variant="gradient" size="sm" asChild>
             <Link href="/generate">Generate My Trip</Link>
           </Button>

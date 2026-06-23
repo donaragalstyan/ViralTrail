@@ -13,7 +13,7 @@ export function Footer() {
           </span>
         </div>
         <p className="text-xs text-muted-foreground">
-          MVP demo with mock data · No APIs connected yet
+          Powered by OpenAI
         </p>
         <Link
           href="/generate"

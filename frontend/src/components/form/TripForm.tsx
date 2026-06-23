@@ -22,7 +22,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formOptions } from "@/data/mockData";
-import type { TripFormData } from "@/types/trip";
+import { getApiUrl } from "@/lib/api";
+import { TRIP_RESULT_STORAGE_KEY } from "@/lib/constants";
+import type { TripFormData, TripResult } from "@/types/trip";
 
 const defaultForm: TripFormData = {
   startingCity: "",
@@ -37,6 +39,7 @@ export function TripForm() {
   const router = useRouter();
   const [form, setForm] = useState<TripFormData>(defaultForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const updateField = (field: keyof TripFormData, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -45,12 +48,34 @@ export function TripForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
-    const params = new URLSearchParams(
-      Object.entries(form) as [string, string][]
-    );
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-    router.push(`/results?${params.toString()}`);
+    try {
+      const response = await fetch(`${getApiUrl()}/api/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error ?? "Failed to generate trip");
+      }
+
+      sessionStorage.setItem(
+        TRIP_RESULT_STORAGE_KEY,
+        JSON.stringify(data as TripResult)
+      );
+
+      const params = new URLSearchParams(
+        Object.entries(form) as [string, string][]
+      );
+      router.push(`/results?${params.toString()}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+      setIsSubmitting(false);
+    }
   };
 
   const isValid =
@@ -200,6 +225,12 @@ export function TripForm() {
           </div>
         </CardContent>
       </Card>
+
+      {error && (
+        <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </p>
+      )}
 
       <Button
         type="submit"

@@ -15,7 +15,24 @@ generateRouter.post(
     }
 
     try {
-      const trip = await generateTrip(req.body as TripFormData);
+      const { excludeDestinations, excludeDestination, ...form } =
+        req.body as TripFormData & {
+          excludeDestinations?: string[];
+          excludeDestination?: string;
+        };
+
+      const rejectedDestinations = Array.isArray(excludeDestinations)
+        ? excludeDestinations.filter(
+            (destination): destination is string =>
+              typeof destination === "string" && destination.trim().length > 0
+          )
+        : typeof excludeDestination === "string" && excludeDestination.trim()
+          ? [excludeDestination.trim()]
+          : [];
+
+      const trip = await generateTrip(form, {
+        excludeDestinations: rejectedDestinations,
+      });
       res.json(trip);
     } catch (error) {
       console.error("Trip generation failed:", error);

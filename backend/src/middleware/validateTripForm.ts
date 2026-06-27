@@ -8,6 +8,8 @@ const requiredFields: (keyof TripFormData)[] = [
   "creatorNiche",
   "platform",
   "travelVibe",
+  "passportCountry",
+  "openToVisaRequired",
 ];
 
 export function isTripFormData(body: unknown): body is TripFormData {

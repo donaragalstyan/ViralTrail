@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Loader2, Sparkles, Wand2 } from "lucide-react";
+import { Loader2, Sparkles, Wand2, Globe } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +24,7 @@ import {
 import { formOptions } from "@/data/mockData";
 import { getApiUrl } from "@/lib/api";
 import { TRIP_RESULT_STORAGE_KEY } from "@/lib/constants";
+import { resetRejectedDestinations } from "@/lib/rejectedDestinations";
 import type { TripFormData, TripResult } from "@/types/trip";
 
 const defaultForm: TripFormData = {
@@ -33,6 +34,8 @@ const defaultForm: TripFormData = {
   creatorNiche: "",
   platform: "",
   travelVibe: "",
+  passportCountry: "",
+  openToVisaRequired: "",
 };
 
 export function TripForm() {
@@ -67,6 +70,7 @@ export function TripForm() {
         TRIP_RESULT_STORAGE_KEY,
         JSON.stringify(data as TripResult)
       );
+      resetRejectedDestinations(form);
 
       const params = new URLSearchParams(
         Object.entries(form) as [string, string][]
@@ -84,7 +88,9 @@ export function TripForm() {
     form.numberOfDays &&
     form.creatorNiche &&
     form.platform &&
-    form.travelVibe;
+    form.travelVibe &&
+    form.passportCountry &&
+    form.openToVisaRequired;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -223,6 +229,72 @@ export function TripForm() {
               </SelectContent>
             </Select>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-white/50 bg-white/70 backdrop-blur-sm">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Globe className="h-5 w-5 text-primary" />
+            <CardTitle>Passport & Visa</CardTitle>
+          </div>
+          <CardDescription>
+            We&apos;ll only suggest destinations you can actually visit based on
+            your passport and visa preferences.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-6 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="passportCountry">Passport Country</Label>
+            <Select
+              value={form.passportCountry}
+              onValueChange={(value) => updateField("passportCountry", value)}
+              required
+            >
+              <SelectTrigger id="passportCountry">
+                <SelectValue placeholder="Select your passport country" />
+              </SelectTrigger>
+              <SelectContent>
+                {formOptions.passportCountries.map((country) => (
+                  <SelectItem key={country} value={country}>
+                    {country}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="openToVisaRequired">
+              Open to visa-required destinations?
+            </Label>
+            <Select
+              value={form.openToVisaRequired}
+              onValueChange={(value) =>
+                updateField("openToVisaRequired", value)
+              }
+              required
+            >
+              <SelectTrigger id="openToVisaRequired">
+                <SelectValue placeholder="Select preference" />
+              </SelectTrigger>
+              <SelectContent>
+                {formOptions.visaPreferences.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {form.openToVisaRequired === "no" && (
+            <p className="text-sm text-muted-foreground sm:col-span-2">
+              We&apos;ll only recommend destinations where your passport allows
+              visa-free entry or easy visa-on-arrival — no embassy applications
+              needed.
+            </p>
+          )}
         </CardContent>
       </Card>
 

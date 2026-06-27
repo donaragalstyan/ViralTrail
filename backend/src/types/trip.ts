@@ -5,6 +5,8 @@ export interface TripFormData {
   creatorNiche: string;
   platform: string;
   travelVibe: string;
+  passportCountry: string;
+  openToVisaRequired: string;
 }
 
 export interface BudgetBreakdown {
